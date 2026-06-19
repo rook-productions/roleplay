@@ -174,6 +174,41 @@
   @keyframes blink{ 50%{opacity:0;} }
 
   em{ color:var(--green); font-style:normal; border-bottom:1px dotted var(--green-faint); }
+
+  /* TTS control */
+  .tts{
+    display:inline-flex; align-items:center; gap:11px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; letter-spacing:0.5px;
+    color:var(--green);
+    background:rgba(51,255,102,0.04);
+    border:1px solid var(--green-faint);
+    border-radius:6px;
+    padding:10px 16px;
+    margin:0 0 28px;
+    cursor:pointer;
+    text-shadow:0 0 4px rgba(51,255,102,0.5);
+    transition:background .15s, box-shadow .15s, border-color .15s, transform .05s;
+  }
+  .tts:hover{
+    background:rgba(51,255,102,0.09);
+    border-color:var(--green-dim);
+    box-shadow:0 0 14px rgba(51,255,102,0.18);
+  }
+  .tts:active{ transform:translateY(1px); }
+  .tts:focus-visible{ outline:1px dashed var(--green-dim); outline-offset:3px; }
+  .tts.speaking{ border-color:var(--green); box-shadow:0 0 16px rgba(51,255,102,0.28); }
+  .tts .glyph{ font-size:14px; line-height:1; min-width:11px; text-align:center; }
+  .tts .tts-state{ color:var(--green-dim); }
+  .tts.speaking .glyph{ animation:blink 1.1s steps(1) infinite; }
+
+  /* currently-spoken block (outline = no reflow) */
+  .reading{
+    outline:1px dashed var(--green-faint);
+    outline-offset:5px;
+    background:rgba(51,255,102,0.06);
+    transition:background .15s;
+  }
 </style>
 </head>
 <body>
@@ -185,6 +220,13 @@
     <span class="prompt">root@faultline:~$</span> cat welcome.notes
     <br><span class="prompt">access:</span> read-once <span class="prompt">| write:</span> denied <span class="prompt">| copies permitted:</span> 0
   </div>
+
+  <button id="ttsBtn" class="tts" type="button" aria-pressed="false" hidden>
+    <span class="prompt">root@faultline:~$</span>
+    <span class="glyph">&#9658;</span>
+    <span class="tts-label">play welcome.notes</span>
+    <span class="tts-state">[ ready ]</span>
+  </button>
 
   <p class="cmd">// [execute.read --node "world.source" --user "new"]</p>
 
@@ -254,5 +296,117 @@
 
 </div>
 </div>
+
+<script>
+(function(){
+  var synth = window.speechSynthesis;
+  var btn = document.getElementById('ttsBtn');
+  if(!synth || !('SpeechSynthesisUtterance' in window) || !btn) return;
+
+  btn.hidden = false; // only show when supported
+
+  var glyph = btn.querySelector('.glyph');
+  var label = btn.querySelector('.tts-label');
+  var state = btn.querySelector('.tts-state');
+
+  var PLAY = '▶';  // ▶
+  var STOP = '■';  // ■
+
+  // Read order: title, then narrative blocks, quotes, the three rules.
+  var blocks = Array.prototype.slice.call(
+    document.querySelectorAll(
+      '.content p:not(.cmd):not(.prompt), .quotes li, .rules-final p'
+    )
+  );
+
+  var speaking = false;
+  var queue = [];
+  var idx = 0;
+  var current = null;
+
+  function pickVoice(){
+    var voices = synth.getVoices() || [];
+    if(!voices.length) return null;
+    // Prefer an English voice; fall back to the first available.
+    var en = voices.filter(function(v){ return /^en(-|_|$)/i.test(v.lang); });
+    return (en[0] || voices[0]);
+  }
+
+  function clearHighlight(){
+    if(current){ current.classList.remove('reading'); current = null; }
+  }
+
+  function setIdle(){
+    speaking = false;
+    btn.classList.remove('speaking');
+    btn.setAttribute('aria-pressed','false');
+    glyph.textContent = PLAY;
+    label.textContent = 'play welcome.notes';
+    state.textContent = '[ ready ]';
+    clearHighlight();
+  }
+
+  function setBusy(){
+    speaking = true;
+    btn.classList.add('speaking');
+    btn.setAttribute('aria-pressed','true');
+    glyph.textContent = STOP;
+    label.textContent = 'stop playback';
+  }
+
+  function speakNext(){
+    if(!speaking) return;
+    clearHighlight();
+    if(idx >= queue.length){ setIdle(); return; }
+
+    var item = queue[idx];
+    state.textContent = '[ ' + (idx+1) + '/' + queue.length + ' ]';
+
+    var u = new SpeechSynthesisUtterance(item.text);
+    var v = pickVoice();
+    if(v){ u.voice = v; u.lang = v.lang; }
+    u.rate = 0.95;
+    u.pitch = 0.9;
+
+    u.onstart = function(){
+      current = item.el;
+      if(current) current.classList.add('reading');
+    };
+    u.onend = function(){ idx++; speakNext(); };
+    u.onerror = function(){ idx++; speakNext(); };
+
+    synth.speak(u);
+  }
+
+  function start(){
+    synth.cancel();
+    queue = blocks
+      .map(function(el){ return { el: el, text: (el.textContent || '').trim() }; })
+      .filter(function(it){ return it.text.length; });
+    if(!queue.length) return;
+    idx = 0;
+    setBusy();
+    speakNext();
+  }
+
+  function stop(){
+    speaking = false;       // block onend chain from re-firing
+    synth.cancel();
+    setIdle();
+  }
+
+  btn.addEventListener('click', function(){
+    if(speaking) stop(); else start();
+  });
+
+  // Voices often load async; harmless no-op if already loaded.
+  if(typeof synth.onvoiceschanged !== 'undefined'){
+    synth.onvoiceschanged = function(){ /* voices cached on next pickVoice */ };
+  }
+
+  // Cancel speech if the user leaves the page.
+  window.addEventListener('beforeunload', function(){ synth.cancel(); });
+})();
+</script>
 </body>
 </html>
