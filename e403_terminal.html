@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>e403 // archive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --green:#33ff66;
+    --green-dim:#1f9c3e;
+    --green-faint:#0c5a23;
+    --bg:#020402;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background:#000;
+    min-height:100%;
+  }
+
+  body{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    background:
+      radial-gradient(ellipse at center, #051006 0%, #000 100%);
+    color:var(--green);
+    padding:32px 16px 80px;
+    -webkit-font-smoothing:none;
+  }
+
+  .screen{
+    max-width:760px;
+    margin:0 auto;
+    background:var(--bg);
+    border:1px solid var(--green-faint);
+    border-radius:10px;
+    padding:34px 40px 48px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:
+      0 0 2px var(--green-dim),
+      0 0 22px rgba(51,255,102,0.18),
+      inset 0 0 60px rgba(0,0,0,0.9),
+      inset 0 0 120px rgba(51,255,102,0.04);
+    text-shadow:0 0 4px rgba(51,255,102,0.55), 0 0 11px rgba(51,255,102,0.25);
+  }
+
+  /* scanlines */
+  .screen::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.28) 3px,
+      rgba(0,0,0,0.28) 4px
+    );
+    pointer-events:none;
+    z-index:5;
+  }
+  /* faint flicker / glow wash */
+  .screen::after{
+    content:"";
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 40%, rgba(51,255,102,0.06), transparent 70%);
+    pointer-events:none;
+    z-index:4;
+    animation:flick 4.5s infinite steps(60);
+  }
+  @keyframes flick{
+    0%,100%{opacity:1;} 7%{opacity:.86;} 8%{opacity:1;}
+    52%{opacity:.93;} 53%{opacity:1;} 78%{opacity:.88;} 79%{opacity:1;}
+  }
+
+  .content{ position:relative; z-index:6; }
+
+  .head{
+    font-family:'VT323', monospace;
+    font-size:15px;
+    color:var(--green-dim);
+    letter-spacing:1px;
+    line-height:1.5;
+    border-bottom:1px dashed var(--green-faint);
+    padding-bottom:14px;
+    margin-bottom:26px;
+    text-shadow:0 0 4px rgba(51,255,102,0.4);
+  }
+  .head .big{
+    display:block;
+    font-size:46px;
+    line-height:1;
+    color:var(--green);
+    margin:6px 0 10px;
+    letter-spacing:4px;
+    text-shadow:0 0 6px rgba(51,255,102,0.7), 0 0 18px rgba(51,255,102,0.4);
+  }
+
+  .content p{
+    font-size:15px;
+    line-height:1.85;
+    margin:0 0 17px;
+    color:var(--green);
+  }
+  .content p.cmd{
+    color:var(--green-dim);
+    font-size:13px;
+    word-break:break-all;
+  }
+  .prompt{ color:var(--green-dim); user-select:none; }
+
+  .sec{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.5px;
+    margin:36px 0 14px;
+    color:var(--green-dim);
+    word-break:break-all;
+  }
+
+  .rule{
+    border:0; border-top:1px dashed var(--green-faint);
+    margin:22px 0;
+  }
+
+  .quotes{
+    list-style:none; padding:0; margin:8px 0 0;
+  }
+  .quotes li{
+    font-size:14px; line-height:1.75;
+    padding:5px 0 5px 20px;
+    position:relative;
+    color:var(--green);
+  }
+  .quotes li::before{
+    content:"//"; position:absolute; left:0;
+    color:var(--green-dim);
+  }
+
+  .gaps li{
+    font-size:14px; line-height:1.7;
+    margin-bottom:11px; color:var(--green);
+  }
+  .gaps b{ color:var(--green); font-weight:500; }
+
+  .rules-final{
+    border:1px solid var(--green-faint);
+    border-radius:6px;
+    padding:18px 22px;
+    margin-top:14px;
+    background:rgba(51,255,102,0.03);
+  }
+  .rules-final p{ margin:0 0 10px; }
+  .rules-final p:last-child{ margin:0; }
+  .num{ color:var(--green-dim); }
+
+  .sig{
+    margin-top:34px;
+    font-family:'VT323', monospace;
+    font-size:16px;
+    color:var(--green-dim);
+    letter-spacing:1px;
+  }
+  .cursor{
+    display:inline-block; width:9px; height:17px;
+    background:var(--green);
+    margin-left:3px; vertical-align:-2px;
+    box-shadow:0 0 6px var(--green);
+    animation:blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{opacity:0;} }
+
+  em{ color:var(--green); font-style:normal; border-bottom:1px dotted var(--green-faint); }
+</style>
+</head>
+<body>
+<div class="screen">
+<div class="content">
+
+  <div class="head">
+    archive node // restricted // do not export<span class="big">e403</span>
+    <span class="prompt">root@faultline:~$</span> cat welcome.notes
+    <br><span class="prompt">access:</span> read-once <span class="prompt">| write:</span> denied <span class="prompt">| copies permitted:</span> 0
+  </div>
+
+  <p class="cmd">// [execute.read --node "world.source" --user "new"]</p>
+
+  <p>so they brought you in. good. read this once, then never again, because i'm about to break the only rule that keeps us alive by even writing it down: what we know lives in two places, behind the screen and behind your eyes. you're the second place now. don't make a third.</p>
+
+  <p class="prompt">root@faultline:~$ _ whoami</p>
+
+  <p>here's what you've actually walked into. this place is a prison. it's an experiment. but it's more than that, and not one of the other factions out there has the first idea. watch them sometime. gather resources, fortify defenses, war. on repeat. they think that's the game. they think winning it means something.</p>
+
+  <p>we know about <em>project r.u.s.t.</em> we know because cobalt fumbled a hard drive they were supposed to burn. rook and darrel know where it's stored, and they're the ones who read what's on it. they'll bring you to it when they decide you're ready. you'll understand the rest of this letter a lot better once you've seen it for yourself.</p>
+
+  <p>the rest of us know too. but don't expect to be able to say it out loud. only rook and darrel can put it into words. you'll try to explain it to someone one day and find the sentence just won't form. that's normal. that's all of us.</p>
+
+  <div class="sec">// [exec.behavior --mode "off_the_loop"]</div>
+
+  <p>you're going to want to do what they do at first. build something big, hold ground, stack supplies for a war that's coming. don't. we'll throw up a few small things to mark out space, enough to say this stretch is ours, and that's where it stops. the rest of that loop is for people who still believe it adds up to something. you've seen the code, or you will. you'll know it doesn't.</p>
+
+  <p>here's how we actually live instead. we gather information, not resources. you make friends. you sit with other groups and quietly learn their movements, their plans, what they're afraid of. you explore, you peel back the fog, you find out what's above us and what's below. we let other groups arm us, fight for them now and then in exchange for gear, because why farm when someone will hand you what you need just to keep you around. and you store nothing that matters where it can be taken. stashes, bunkers, scattered. let them raid you. they'll find nothing, and even if they found everything, it would still be nothing, because none of this matters anyway.</p>
+
+  <p>but understand this one, because everything else bends and this doesn't: we never trade what we know for nothing. it's the only thing we hold with any real weight. it leaves our hands at our price, or it doesn't leave.</p>
+
+  <div class="sec">// [exec.cope --members "*" --mode "varies"]</div>
+
+  <p>i won't lie to you. knowing how it ends is heavy, and it doesn't get lighter, you just learn to carry it. everybody here carries it differently. some turn to music, art, throwing parties in the dark. some chase thrills, violence, death. some stay strangely hopeful. some are lost to nihilism. all of that's fine. a calm fatalist and a maniac chasing the next adrenaline hit are the same faction down here, because they've learned the same thing and just hold it different ways. so be whoever you actually are. just don't lose the certainty underneath it. once you've seen what we've seen, it shows on you whether you mean it to or not.</p>
+
+  <div class="sec">// [exec.engage --restrictions "none"]</div>
+
+  <p>one more thing, so you don't get the wrong idea about how quiet we keep. some of the sharpest engineering minds down here wear this tag, and nobody tells them what they can and can't do. you'll see it in how we hold our ground: we wall off our tunnels, but we leave the gates open. anyone can pass through, right up until the moment it's worth shutting someone out, or sealing someone in. we don't go looking for fights. but anyone who decides to make us their problem tends to walk away understanding exactly what those minds are capable of. the quiet is a choice. don't mistake it for weakness, and don't let anyone else either.</p>
+
+  <div class="sec">// [exec.print --buffer "voice.log"]</div>
+
+  <p>once you've spent enough time down here with us, you'll hear us saying things like:</p>
+
+  <ul class="quotes">
+    <li>i've seen how this all ends, and how to survive what's coming. nothing left to do now but wait.</li>
+    <li>this is all just a game, and you're playing it wrong.</li>
+    <li>the end is going to come for everyone quickly, and you'll all be looking the wrong direction when it does.</li>
+    <li>keep trying. a lot of good it'll do you.</li>
+    <li>this all makes sense once you've seen the code.</li>
+    <li>i've seen the truth, and that makes me one of the few free people in this prison.</li>
+    <li>we've learned a lot, but there's even more still to learn.</li>
+    <li>the server denies access for all users.</li>
+    <li>you don't have the proper permissions to know what i know.</li>
+    <li>i'm here for a good time, not a long time.</li>
+    <li>death is so boring. if you're looking for excitement it's all about how you die.</li>
+  </ul>
+
+  <div class="sec">// [read.null --fields "undecided" --solo false]</div>
+
+  <p>and one last thing, because you should hear it from someone who's been here. there's more to this than even rook and darrel have shown us. i can feel it sitting behind everything they've told me. if i'm being honest with you, i'm scared to know whatever that is.</p>
+
+  <hr class="rule">
+
+  <div class="sec">// [exec.lock --rules "immutable"]</div>
+  <div class="rules-final">
+    <p><span class="num">[01]</span> never tell our secrets.</p>
+    <p><span class="num">[02]</span> never sell our secrets.</p>
+    <p><span class="num">[03]</span> if you ever want to sell someone else's secrets, run it past rook and darrel first.</p>
+  </div>
+
+  <p style="margin-top:18px;">everything past those three is just style. welcome to e403. now forget you read this.</p>
+
+  <div class="sig">
+    <span class="prompt">root@faultline:~$</span> logout<br>
+    connection closed. access denied to all users.<span class="cursor"></span>
+  </div>
+
+</div>
+</div>
+</body>
+</html>
